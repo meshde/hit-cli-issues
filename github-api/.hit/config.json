@@ -1,0 +1,40 @@
+{
+  "envs": {
+    "prod": {
+      "API_URL": "https://api.github.com"
+    }
+  },
+  "commands": {
+    "issues": {
+      "create": {
+        "method": "POST",
+        "url": "{{API_URL}}/repos/:repo/issues",
+        "headers": {
+          "Authorization": "Bearer {{GH_API_TOKEN}}"
+        },
+        "body": {
+          "title": ":title",
+          "body": ""
+        }
+      },
+      "list": {
+        "method": "GET",
+        "url": "{{API_URL}}/repos/:repo/issues"
+      }
+    },
+    "pr": {
+      "view": {
+        "method": "GET",
+        "url": "{{API_URL}}/repos/:repo/pulls/:prNumber"
+      },
+      "checkout": {
+        "method": "GET",
+        "url": "{{API_URL}}/repos/:repo/pulls/:prNumber",
+        "postscript": {
+          "command": "bash",
+          "file": "checkout_pr.sh"
+        }
+      }
+    }
+  }
+}
