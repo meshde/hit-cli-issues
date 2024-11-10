@@ -29,7 +29,7 @@
       },
       "checkout": {
         "method": "GET",
-        "url": "{{API_URL}}/repos/:repo/pulls/:prNumber",
+        "url": "{{API_URL}}/repos/:user/:repo/pulls/:prNumber",
         "postscript": {
           "command": "bash",
           "file": "checkout_pr.sh"
