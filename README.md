@@ -242,3 +242,48 @@ Normally, running a command would simply output the body of the response of the 
 ```bash
 hit last view
 ```
+
+
+### Postscripts
+
+Postscripts allow you to run any script using the response of a particular API call. The script can be in any language/runtime that is supported on your machine. This can be useful if you want to perform any kind of action using the response of an API call. Some possible-use cases:
+
+* The most common use-case for this would be to store an API token that can be obtained from a call to an authentication API endpoint. Using postscripts, the token in the response can be stored in the ephenv such that other commands are able to pass the token in the authentication headers.
+* Another use-case would be to be able to always format the response of a particular command in a particular way. For example, an endpoint returns an array of objects and the command is expected to always display the json array in tabular format. This can be achieved adding a bash postscript to use `jq` to format the response or you could write a custom python/node script to do this as well.
+* This can also be used to chain multiple commands together. For example, from the response of command A we can extract the necessary fields that command B expects as input and invoke command B in a bash based postscript.
+
+#### Configuring Postscripts
+
+1. All postscripts can be defined under the `postscripts` directory under the `.hit` directory. For example, if you have a script named `store_token.sh`, this would be at the path `.hit/postscripts/store_token.sh`
+2. Which postscript to invoke after a particular command can be configured in the `postscript` field in that particular command's config. The `postscript` field has the following sub-fields:
+    1. `command`: This field specifies the run-time needed to invoke the script. This could be `bash` or `python` or `node` and so on.
+    2. `file`: This is the name of the file relative to the `postscripts` directory that needs to be invoked.
+
+For example, with a config like so:
+
+```json
+{
+  "commands": {
+    "login": {
+      "url": "https://authenticate.com/login",
+      "method": "POST",
+      "body": {
+        "user": ":user",
+        "pass": ":pass"
+      }
+      "postscript": {
+        "command": "bash",
+        "file": "set_token.sh"
+      }
+    }
+  }
+}
+```
+
+and a postscript file `postscrtips/set_token.sh` with contents like so:
+
+```bash
+hit ephenv set API_TOKEN `cat $HIT_RESPONSE_PATH`
+```
+
+Assuming the response of the login call would just be the API token as a string, running `hit run login --user username --password abcd1234` would fetch the token from the API endpoint and store it in the ephenv `API_TOKEN` for the rest of the hit commands to be able to use.
